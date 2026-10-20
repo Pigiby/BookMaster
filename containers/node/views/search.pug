@@ -1,0 +1,22 @@
+extends layout
+include partials/book_card
+
+block content
+  h1.mb-4 Trova il libro che ti piace
+  form.d-flex.gap-2.mb-4(method='get' action='/search' role='search')
+    input.form-control(type='search' name='q' value=q placeholder='Titolo, autore, ISBN…' required)
+    button.btn.btn-light(type='submit') Cerca
+
+  if results
+    if results.length
+      each book in results
+        +bookCard(book)
+          if loggedIn
+            each shelf, key in shelves
+              +postButton(`/mybook/${key}`, book.id, `+ ${shelf.label}`)
+    else
+      p.text-light Nessun libro trovato per “#{q}”.
+  if results && results.length && !loggedIn
+    p.text-light
+      a.link-light(href='/login') Accedi
+      |  per aggiungere i libri ai tuoi scaffali.

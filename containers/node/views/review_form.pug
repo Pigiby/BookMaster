@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1.mb-4 Recensisci “#{book.title}”
+
+  if errors.length
+    .alert.alert-danger
+      each error in errors
+        div= error
+
+  form.card.card-body(method='post' action=`/books/${book.id}/reviews`)
+    fieldset.mb-3
+      legend.form-label Valutazione
+      //- Rendered 5 → 1 and flipped by CSS so hovering fills the stars to the left.
+      .star-rating
+        each value in [5, 4, 3, 2, 1]
+          input(type='radio' id=`stars-${value}` name='stars' value=value checked=(String(form.stars) === String(value)) required)
+          label(for=`stars-${value}` title=`${value} stelle`) ★
+    .mb-3
+      label.form-label(for='text') Commento
+      textarea#text.form-control(name='text' rows='5' maxlength='2000' required)= form.text
+    button.btn.btn-primary(type='submit') Invia

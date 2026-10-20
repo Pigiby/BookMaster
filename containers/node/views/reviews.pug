@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1.mb-1= book.title
+  p.text-light.mb-4 #{reviews.length} recensioni
+
+  if loggedIn
+    a.btn.btn-light.mb-4(href=`/books/${book.id}/reviews/new`) Lascia una recensione
+
+  if reviews.length
+    .table-responsive
+      table.table.table-light.align-middle
+        thead
+          tr
+            th(scope='col') Stelle
+            th(scope='col') Commento
+            th(scope='col') Utente
+        tbody
+          each review in reviews
+            tr
+              td.stars(aria-label=`${review.stars} stelle su 5`)= '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars)
+              td= review.text
+              td.text-muted= review.email
+  else
+    p.text-light Non ci sono ancora recensioni per questo libro.

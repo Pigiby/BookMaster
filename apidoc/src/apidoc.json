@@ -1,5 +1,7 @@
 {
-    "name": "Bookmaster",
-    "version": "1.0.0",
-    "description": "Bookmaster api"
+  "name": "BookMaster",
+  "version": "2.0.0",
+  "description": "API REST di BookMaster",
+  "title": "BookMaster API",
+  "url": "https://localhost"
 }

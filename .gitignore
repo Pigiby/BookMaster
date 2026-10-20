@@ -104,3 +104,8 @@ dist
 .tern-port
 
 .env
+# BookMaster
+.DS_Store
+certs/
+# Old bind-mounted CouchDB data (the database now lives in a Docker volume)
+containers/couchdb/

@@ -1,0 +1,19 @@
+- const links = [['/', 'Home'], ['/search', 'Cerca'], ['/mybook', 'I miei libri']]
+nav.navbar.navbar-expand-md.navbar-light.bg-light
+  .container
+    a.navbar-brand(href='/')
+      img(src='/images/logo.png' alt='BookMaster' width='40')
+    button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#mainNav' aria-controls='mainNav' aria-expanded='false' aria-label='Apri menu')
+      span.navbar-toggler-icon
+    #mainNav.collapse.navbar-collapse
+      ul.navbar-nav.me-auto
+        each link in links
+          li.nav-item
+            a.nav-link(href=link[0] class=(currentPath === link[0] ? 'active' : ''))= link[1]
+      ul.navbar-nav
+        if loggedIn
+          li.nav-item
+            a.nav-link(href='/logout') Esci
+        else
+          li.nav-item
+            a.nav-link(href='/login') Accedi con Google

@@ -1,0 +1,22 @@
+mixin bookCard(book)
+  .card.book-card.mb-3
+    .row.g-0
+      .col-auto.p-3
+        img.book-cover(src=book.thumbnail || '/images/logo_libro.png' alt='')
+      .col
+        .card-body
+          h2.h5.card-title= book.title
+          if book.authors.length
+            p.card-subtitle.text-muted.mb-2= book.authors.join(', ')
+          if book.pageCount
+            p.small.mb-2 #{book.pageCount} pagine
+          .d-flex.flex-wrap.gap-2
+            block
+            a.btn.btn-sm.btn-outline-secondary(href=`/books/${book.id}/reviews`) Recensioni
+            if book.infoLink
+              a.btn.btn-sm.btn-link(href=book.infoLink target='_blank' rel='noopener') Google Books
+
+mixin postButton(action, id, label, style)
+  form.d-inline(method='post' action=action)
+    input(type='hidden' name='id' value=id)
+    button.btn.btn-sm(type='submit' class=style || 'btn-outline-primary')= label

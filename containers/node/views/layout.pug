@@ -1,0 +1,14 @@
+doctype html
+html(lang='it')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    title= title ? `${title} · BookMaster` : 'BookMaster'
+    link(rel='icon' href='/images/logo.png')
+    link(rel='stylesheet' href='/stylesheets/bootstrap.min.css')
+    link(rel='stylesheet' href='/stylesheets/stile.css')
+  body
+    include partials/nav
+    main.container.py-4
+      block content
+    script(src='/javascripts/bootstrap.bundle.min.js')

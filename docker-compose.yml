@@ -1,95 +1,74 @@
-version: "3.8"
+name: bookmaster
+
+# Shared settings for the services that read the project's .env file.
+x-env: &env
+  env_file: .env
+  restart: unless-stopped
+
 services:
   nginx:
-    image: nginx:latest
+    build: ./containers/nginx
+    restart: unless-stopped
     ports:
-      - 3000:80
-      - 443:443
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
-      - ./containers/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./certs:/etc/nginx/certs
-    networks:
-      - app
-    links:
-      - node1:node1
-      - node2:node2
-      - node3:node3
+      - ./certs:/etc/nginx/certs   # a self-signed cert is generated here on first start
     depends_on:
-      - node1
-      - node2
-      - node3
-  node1:
-    build: ./containers/node
-    ports:
-      - 3001:3000
-    container_name: "node1"
-    networks:
-      - app
-      - db
-      - rabbit
-    environment:
-      - NAME_OF_NODE=node1
-    env_file:
-      - .env
-  node2:
-    build: ./containers/node
-    ports:
-      - 3002:3000
-    networks:
-      - app
-      - db
-      - rabbit
-    container_name: "node2"
-    environment:
-      - NAME_OF_NODE=node2
-    env_file:
-      - .env
-  node3:
-    build: ./containers/node
-    ports:
-      - 3003:3000
-    networks:
-      - app
-      - db
-      - rabbit
-    container_name: "node3"
-    environment:
-      - NAME_OF_NODE=node3
-    env_file:
-      - .env
-  couchserver:
-    build: "./containers/couchdb"
-    restart: always
-    container_name: "couch"
-    ports:
-      - 5984:5984
-    env_file:
-      - .env
-    networks:
-      - db
-    volumes:
-      - ./containers/couchdb/data:/opt/couchdb/data
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbit
-    env_file:
-      - .env
-    ports:
-      - 5672:5672
-      - 15672:15672
-    networks:
-      - rabbit
-  nodemailer:
-    build: ./containers/mailer
-    restart: always
-    volumes: 
-      - ./containers/mailer:/usr/app
-    networks:
-      - rabbit
-    env_file:
-      - .env
+      web:
+        condition: service_healthy
 
-networks:
-  app:
-  db:
-  rabbit:
+  web:
+    <<: *env
+    build: ./containers/node
+    deploy:
+      replicas: ${WEB_REPLICAS:-3}
+    depends_on:
+      couchdb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  couchdb:
+    image: couchdb:3.5
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:?set COUCHDB_USER in .env}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?set COUCHDB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5984:5984"   # Fauxton admin UI: http://localhost:5984/_utils
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:5984/_up"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?set RABBITMQ_USER in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5672:5672"   # AMQP, for running the web app outside Docker
+      - "127.0.0.1:15672:15672" # management UI: http://localhost:15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailer:
+    <<: *env
+    build: ./containers/mailer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  couchdb-data:
+  rabbitmq-data:

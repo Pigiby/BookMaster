@@ -1,0 +1,32 @@
+extends layout
+include partials/book_card
+
+block content
+  h1.mb-4 La mia libreria
+
+  if !loggedIn
+    p.text-light Accedi con il tuo account Google per gestire i tuoi scaffali di Google Books.
+    a.login-with-google-btn(href='/login') Accedi con Google
+  else
+    ul.nav.nav-pills.mb-4
+      each shelf, key in shelves
+        li.nav-item
+          a.nav-link(href=`/mybook?scaffale=${key}` class=(key === shelfKey ? 'active' : 'text-light'))= shelf.label
+
+    if notice
+      .alert.alert-success= notice
+
+    if items.length
+      each book in items
+        +bookCard(book)
+          a.btn.btn-sm.btn-outline-primary(href=`/books/${book.id}/reviews/new`) Lascia una recensione
+          if shelfKey === 'da_leggere'
+            +postButton('/mybook/start-reading', book.id, 'Inizia a leggere')
+            +postButton('/mybook/mark-read', book.id, 'Segna come letto')
+          +postButton(`/mybook/${shelfKey}/remove`, book.id, 'Rimuovi', 'btn-outline-danger')
+    else
+      p.text-light
+        | Questo scaffale è vuoto.
+        |
+        a.link-light(href='/search') Cerca un libro
+        |  da aggiungere.

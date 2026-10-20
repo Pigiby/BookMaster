@@ -1,158 +1,94 @@
 /**
- * @api {get} /api/getreview/bytitle/:title Richiesta lista recensioni di un libro tramite titolo
- * @apiName Getreviewbytitle
- * @apiGroup Titolo
+ * @api {get} /status Stato del servizio
+ * @apiName Status
+ * @apiGroup Servizio
+ * @apiDescription Utile come health check: risponde la replica che ha servito la richiesta.
  *
- * @apiParam title titolo del libro di cui si vuole avere la lista delle recensioni
- * @apiParamExample {text} Esempio-Richiesta:
- *      https://localhost/api/getreiew/bytitle/harry+potter
- * @apiSuccess {String} title titolo del libro trovato
- * @apiSuccess {String} picture copertina del libro trovato
- * @apiSuccess {String} esadecimal identificativo del libro del database (controllo) 
- * @apiSuccess {Number} number_of_reviews numero di recensioni totale
- * @apiSuccess {Array} reviews contenuto delle recensioni con star,recensione ed email
- * 
+ * @apiSuccess {String} status Sempre <code>online</code>
+ * @apiSuccess {String} node   Nome della replica web che ha risposto
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     {
- *       "title": "Come stai?",
- *       "picture": "http://books.google.com/books/content?id=t_i_yQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
- *       "esadecimal": "l745f695f795145414341414a20",
- *       "number_of_reviews": 3,
- *       "reviews": [
- *           {
- *               "id": "1",
- *               "key": "1",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "3",
- *                   "ciao"
- *               ]
- *           },
- *           {
- *               "id": "2",
- *               "key": "2",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "3",
- *                   "Questo libro mi piace particolarmente"
- *               ]
- *           },
- *           {
- *               "id": "3",
- *               "key": "3",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "5",
- *                   "questo libro è cosi bello che lo vorrei leggere ogni singolo giorno della mia vita. troppo troppo interessante!!!!"
- *               ]
- *           }
- *        ]
- *       }
- *
- * @apiError attribute_not_declared title not declared
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {'error':"attribute title not declared"}
- *
- * @apiError database_offline database of this book not exist
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *      {
- *          "title": "Harry Potter e la Pietra Filosofale",
- *          "picture": "http://books.google.com/books/content?id=9CJWTbd-RYoC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
- *          "esadecimal": "l39434a575462642d52596f4320",
- *          "number_of_reviews": 0,
- *          "reason": "no_reviews_for_this_book"
- *      }
- * 
- * @apiError No_books_for_the_title_searched If you search a book that is not found in google books database
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {'error':"No books with this title"}
- * 
- * 
- * 
- * 
+ *     { "status": "online", "node": "3967894e01d3" }
  */
+
 /**
- * @api {get} /api/getreview/byid/:id Richiesta lista recensioni di un libro tramite id_libro di google books
- * @apiName Getreviewbyid
- * @apiGroup Id
- *
- * @apiParam id identificativo del libro di cui si vuole avere la lista delle recensioni
- * @apiParamExample {text} Esempio-Richiesta:
- *      https://localhost/api/getreiew/byid/t_i_yQEACAAJ
- * @apiSuccess {String} title titolo del libro trovato
- * @apiSuccess {String} picture copertina del libro trovato
- * @apiSuccess {String} esadecimal identificativo del libro del database (controllo) 
- * @apiSuccess {Number} number_of_reviews numero di recensioni totale
- * @apiSuccess {Array} reviews contenuto delle recensioni con star,recensione ed email
- * 
+ * @apiDefine ReviewsSuccess
+ * @apiSuccess {String} id                 Id del libro su Google Books
+ * @apiSuccess {String} title              Titolo del libro
+ * @apiSuccess {String} picture            Copertina del libro (può essere <code>null</code>)
+ * @apiSuccess {Number} number_of_reviews  Numero di recensioni
+ * @apiSuccess {Object[]} reviews          Recensioni, dalla più vecchia
+ * @apiSuccess {String} reviews.email      Email di chi ha scritto la recensione
+ * @apiSuccess {Number} reviews.stars      Stelle, da 1 a 5
+ * @apiSuccess {String} reviews.text       Testo della recensione
+ * @apiSuccess {String} reviews.createdAt  Data in formato ISO 8601
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
+ *       "id": "t_i_yQEACAAJ",
  *       "title": "Come stai?",
  *       "picture": "http://books.google.com/books/content?id=t_i_yQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
- *       "esadecimal": "l745f695f795145414341414a20",
- *       "number_of_reviews": 3,
+ *       "number_of_reviews": 1,
  *       "reviews": [
- *           {
- *               "id": "1",
- *               "key": "1",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "3",
- *                   "ciao"
- *               ]
- *           },
- *           {
- *               "id": "2",
- *               "key": "2",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "3",
- *                   "Questo libro mi piace particolarmente"
- *               ]
- *           },
- *           {
- *               "id": "3",
- *               "key": "3",
- *               "value": [
- *                   "example58@gmail.com",
- *                   "5",
- *                   "questo libro è cosi bello che lo vorrei leggere ogni singolo giorno della mia vita. troppo troppo interessante!!!!"
- *               ]
- *           }
- *        ]
- *       }
+ *         {
+ *           "email": "example@gmail.com",
+ *           "stars": 5,
+ *           "text": "Questo libro mi piace particolarmente",
+ *           "createdAt": "2026-10-20T14:27:43.719Z"
+ *         }
+ *       ]
+ *     }
  *
- * @apiError attribute_not_declared title not declared
+ * @apiError (503) database_unavailable Il database delle recensioni non è raggiungibile
+ * @apiError (502) upstream_error       Google Books non ha risposto
+ */
+
+/**
+ * @api {get} /api/getreview/bytitle/:title Recensioni di un libro cercato per titolo
+ * @apiName GetReviewByTitle
+ * @apiGroup Recensioni
+ * @apiDescription Cerca il titolo su Google Books e restituisce le recensioni del primo risultato.
+ * Il titolo si può passare anche come query string: <code>/api/getreview/bytitle?title=harry+potter</code>.
  *
+ * @apiParam {String} title Titolo (o parte del titolo) del libro
+ * @apiExample {curl} Esempio:
+ *     curl -k https://localhost/api/getreview/bytitle/harry+potter
+ *
+ * @apiUse ReviewsSuccess
+ *
+ * @apiError (400) attribute_not_declared Manca il titolo
  * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {'error':"attribute id not declared"}
- * 
-* @apiError database_offline database of this book not exist
+ *     HTTP/1.1 400 Bad Request
+ *     { "error": "attribute title not declared" }
  *
+ * @apiError (404) no_books Nessun libro trovato con quel titolo
+ * @apiErrorExample Not-Found:
+ *     HTTP/1.1 404 Not Found
+ *     { "error": "No books with this title" }
+ */
+
+/**
+ * @api {get} /api/getreview/byid/:id Recensioni di un libro per id
+ * @apiName GetReviewById
+ * @apiGroup Recensioni
+ * @apiDescription L'id è quello di Google Books. Si può passare anche come query string:
+ * <code>/api/getreview/byid?id=t_i_yQEACAAJ</code>.
+ *
+ * @apiParam {String} id Id del libro su Google Books
+ * @apiExample {curl} Esempio:
+ *     curl -k https://localhost/api/getreview/byid/t_i_yQEACAAJ
+ *
+ * @apiUse ReviewsSuccess
+ *
+ * @apiError (400) attribute_not_declared Manca l'id
  * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *      {
- *          "title": "Harry Potter e la Pietra Filosofale",
- *          "picture": "http://books.google.com/books/content?id=9CJWTbd-RYoC&printsec=frontcover&img=1&zoom=5&edge=curl&imgtk=AFLRE73rVE-11HuoHjzZ-Hl74nMpEy-sEtRNXf1E2tXPN-QXVWM26WvsP5lX41ioBOXkaAsJ9fOqu5yS8W4_1AvlbB_tOJJ1lGOTEqJj8r6EX52Gerc3tDCpDOvS4gmaFF4jHmr1fcrB&source=gbs_api",
- *          "esadecimal": "l39434a575462642d52596f4320",
- *          "error": "no_reviews_for_this_book"
- *      }
- * 
- *@apiError No_book_found_for_the_id_in_the_url  if you are searching for a book whit id that does not exists in the google book db
+ *     HTTP/1.1 400 Bad Request
+ *     { "error": "attribute id not declared" }
  *
- *@apiErrorExample Error-Response:
+ * @apiError (404) no_book Nessun libro con questo id su Google Books
+ * @apiErrorExample Not-Found:
  *     HTTP/1.1 404 Not Found
- *     {'error':"No book for this id in google books"}
- * 
+ *     { "error": "No book for this id in google books" }
  */
